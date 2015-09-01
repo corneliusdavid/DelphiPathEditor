@@ -14,6 +14,7 @@ object frmPathEditorMain: TfrmPathEditorMain
   Font.Style = []
   OldCreateOrder = False
   OnCreate = FormCreate
+  OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 16
   object Label1: TLabel
@@ -88,7 +89,7 @@ object frmPathEditorMain: TfrmPathEditorMain
     Left = 176
     Top = 256
     Bitmap = {
-      494C010104000800140010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010104000800200010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000002000000001002000000000000020
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -423,5 +424,9 @@ object frmPathEditorMain: TfrmPathEditorMain
     Title = 'No versions of Delphi are installed.'
     Left = 56
     Top = 232
+  end
+  object ccRegistryLayoutSaver: TccRegistryLayoutSaver
+    Left = 512
+    Top = 280
   end
 end

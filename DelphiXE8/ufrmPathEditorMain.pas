@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Menus, Vcl.Buttons,
-  System.Actions, Vcl.ActnList, System.ImageList, Vcl.ImgList;
+  System.Actions, Vcl.ActnList, System.ImageList, Vcl.ImgList, LayoutSaver;
 
 type
   TfrmPathEditorMain = class(TForm)
@@ -31,8 +31,10 @@ type
     Add1: TMenuItem;
     Remove1: TMenuItem;
     dlgNoDelphi: TTaskDialog;
+    ccRegistryLayoutSaver: TccRegistryLayoutSaver;
     procedure FormCreate(Sender: TObject);
     procedure cmbThemeClick(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     const
       BDS_RegPath = 'Software\Embarcadero\BDS';
@@ -67,6 +69,11 @@ var
   BDSVr: Double;
   IntVer: Integer;
 begin
+  {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'Create'); {$ENDIF}
+  {$IFDEF UseCodeSite} CodeSite.Send('BDSKey', BDSKey); {$ENDIF}
+  {$IFDEF UseCodeSite} CodeSite.Send('Registry Path to Environment Variables', RegPath); {$ENDIF}
+  {$IFDEF UseCodeSite} CodeSite.Send('Path setting', CurrEnvVarPath); {$ENDIF}
+
   if TryStrToFloat(BDSKey, BDSVr) then
     IntVer := Round(BDSVr * 10.0)
   else
@@ -86,9 +93,12 @@ begin
   else
     DelphiVersion := 'N/A';
   end;
+  {$IFDEF UseCodeSite} CodeSite.Send('Delphi Version', DelphiVersion); {$ENDIF}
 
   RegistryPath := RegPath;
   EnvVarPath := CurrEnvVarPath;
+
+  {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'Create'); {$ENDIF}
 end;
 
 { TfrmPathEditorMain }
@@ -100,6 +110,9 @@ var
   EnvironPath: string;
   BDSEntry: TBDSPathEntry;
 begin
+  {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'AddDelphiPath'); {$ENDIF}
+  {$IFDEF UseCodeSite} CodeSite.Send('BDSKey', BDSKey); {$ENDIF}
+
   reg := TRegistry.Create;
   try
     reg.RootKey := HKEY_CURRENT_USER;
@@ -114,6 +127,8 @@ begin
   finally
     reg.Free;
   end;
+
+  {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'AddDelphiPath'); {$ENDIF}
 end;
 
 procedure TfrmPathEditorMain.cmbThemeClick(Sender: TObject);
@@ -127,6 +142,8 @@ var
   bdsKey: string;
   bdsKeys: TStringList;
 begin
+  {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'InitDelphis'); {$ENDIF}
+
   reg := TRegistry.Create;
   try
     reg.RootKey := HKEY_CURRENT_USER;
@@ -147,21 +164,47 @@ begin
   finally
     reg.Free;
   end;
+
+  {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'InitDelphis'); {$ENDIF}
 end;
 
 procedure TfrmPathEditorMain.InitThemes;
 var
   style: string;
 begin
+  {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'InitThemes'); {$ENDIF}
+
+  // load the combo box
   for style in TStyleManager.StyleNames do
     cmbTheme.Items.Add(style);
+
+  // restore saved setting
+  style := Trim(ccRegistryLayoutSaver.ResstoreStrValue('Theme'));
+  if Length(style) > 0 then
+    TStyleManager.SetStyle(style);
+
   cmbTheme.ItemIndex := cmbTheme.Items.IndexOf(TStyleManager.ActiveStyle.Name);
+
+  {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'InitThemes'); {$ENDIF}
 end;
 
 procedure TfrmPathEditorMain.FormCreate(Sender: TObject);
 begin
+  {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'FormCreate'); {$ENDIF}
+
   InitDelphis;
   InitThemes;
+
+  {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'FormCreate'); {$ENDIF}
+end;
+
+procedure TfrmPathEditorMain.FormDestroy(Sender: TObject);
+begin
+  {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'FormDestroy'); {$ENDIF}
+
+  ccRegistryLayoutSaver.SaveStrValue('Theme', TStyleManager.ActiveStyle.Name);
+
+  {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'FormDestroy'); {$ENDIF}
 end;
 
 end.
