@@ -5,7 +5,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Menus, Vcl.Buttons,
-  System.Actions, Vcl.ActnList, System.ImageList, Vcl.ImgList, LayoutSaver;
+  System.Actions, Vcl.ActnList, System.ImageList, Vcl.ImgList, LayoutSaver, Vcl.StdActns,
+  Vcl.ComCtrls, Vcl.ToolWin, Vcl.ExtCtrls;
 
 type
   TfrmPathEditorMain = class(TForm)
@@ -13,17 +14,12 @@ type
     cmbDelphis: TComboBox;
     Label2: TLabel;
     cmbTheme: TComboBox;
-    ListBox1: TListBox;
     imlActions: TImageList;
     actPathActions: TActionList;
     actSave: TAction;
     actCancel: TAction;
     actAdd: TAction;
     actRemove: TAction;
-    btnSave: TSpeedButton;
-    btnCancel: TSpeedButton;
-    btnAdd: TSpeedButton;
-    btnRemove: TSpeedButton;
     mnuPathActions: TPopupMenu;
     Save1: TMenuItem;
     Cancel1: TMenuItem;
@@ -32,9 +28,46 @@ type
     Remove1: TMenuItem;
     dlgNoDelphi: TTaskDialog;
     ccRegistryLayoutSaver: TccRegistryLayoutSaver;
+    N2: TMenuItem;
+    Edit1: TMenuItem;
+    Cut1: TMenuItem;
+    Copy1: TMenuItem;
+    Paste1: TMenuItem;
+    actEditCut: TEditCut;
+    edtEditCopy: TEditCopy;
+    edtEditPaste: TEditPaste;
+    N3: TMenuItem;
+    actMoveUp: TAction;
+    actMoveDown: TAction;
+    lblChangeIndicator: TLabel;
+    MoveUp1: TMenuItem;
+    MoveDown1: TMenuItem;
+    dlgCancelChangesPrompt: TTaskDialog;
+    dlgSaveChangesPrompt: TTaskDialog;
+    ToolBar1: TToolBar;
+    ToolButton1: TToolButton;
+    ToolButton2: TToolButton;
+    ToolButton6: TToolButton;
+    ToolButton3: TToolButton;
+    ToolButton4: TToolButton;
+    ToolButton5: TToolButton;
+    ToolButton7: TToolButton;
+    ToolButton8: TToolButton;
+    ToolButton9: TToolButton;
+    ToolButton10: TToolButton;
+    ToolButton11: TToolButton;
+    ToolButton12: TToolButton;
+    lbPaths: TListBox;
     procedure FormCreate(Sender: TObject);
     procedure cmbThemeClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure cmbDelphisChange(Sender: TObject);
+    procedure cmbDelphisCloseUp(Sender: TObject);
+    procedure actRemoveExecute(Sender: TObject);
+    procedure actMoveUpExecute(Sender: TObject);
+    procedure actMoveDownExecute(Sender: TObject);
+    procedure actCancelExecute(Sender: TObject);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private
     const
       BDS_RegPath = 'Software\Embarcadero\BDS';
@@ -46,9 +79,14 @@ type
         EnvVarPath: string;
         constructor Create(const BDSKey, RegPath, CurrEnvVarPath: string);
       end;
+    var
+      FChangesMade: Boolean;
+    procedure ListPaths;
     procedure InitThemes;
     procedure InitDelphis;
     procedure AddDelphiPath(const BDSKey: string);
+    procedure SetChangesMade(const Value: Boolean);
+    property ChangesMade: Boolean read FChangesMade write SetChangesMade;
   end;
 
 var
@@ -80,16 +118,16 @@ begin
     IntVer := 0;
 
   case IntVer of
-    70 : DelphiVersion := 'Delphi 2010';
-    80 : DelphiVersion := 'Delphi XE';
-    90 : DelphiVersion := 'Delphi XE2';
-    100: DelphiVersion := 'Delphi XE3';
-    110: DelphiVersion := 'Delphi XE4';
-    120: DelphiVersion := 'Delphi XE5';
-    140: DelphiVersion := 'Delphi XE6';
-    150: DelphiVersion := 'Delphi XE7';
-    160: DelphiVersion := 'Delphi XE8';
-    170: DelphiVersion := 'Delphi XE10';
+    70 : DelphiVersion := 'Vr 14: "Delphi 2010"';
+    80 : DelphiVersion := 'Vr 15: "Delphi XE"';
+    90 : DelphiVersion := 'Vr 16: "Delphi XE2"';
+    100: DelphiVersion := 'Vr 17: "Delphi XE3"';
+    110: DelphiVersion := 'Vr 18: "Delphi XE4"';
+    120: DelphiVersion := 'Vr 19: "Delphi XE5"';
+    140: DelphiVersion := 'Vr 20: "Delphi XE6"';
+    150: DelphiVersion := 'Vr 21: "Delphi XE7"';
+    160: DelphiVersion := 'Vr 22: "Delphi XE8"';
+    170: DelphiVersion := 'Vr 23: "Delphi 10 Seattle"';
   else
     DelphiVersion := 'N/A';
   end;
@@ -102,6 +140,58 @@ begin
 end;
 
 { TfrmPathEditorMain }
+
+procedure TfrmPathEditorMain.actCancelExecute(Sender: TObject);
+begin
+  if ChangesMade then
+    if dlgCancelChangesPrompt.Execute and (dlgCancelChangesPrompt.ModalResult = mrYes) then
+      ListPaths;
+end;
+
+procedure TfrmPathEditorMain.actMoveDownExecute(Sender: TObject);
+var
+  SavePath: string;
+  SaveItemIndex: Integer;
+begin
+  if lbPaths.ItemIndex < lbPaths.Count - 1 then begin
+    SaveItemIndex := lbPaths.ItemIndex;
+    SavePath := lbPaths.Items[SaveItemIndex + 1];
+    lbPaths.Items[SaveItemIndex + 1] := lbPaths.Items[SaveItemIndex];
+    lbPaths.Items[SaveItemIndex] := SavePath;
+    lbPaths.ItemIndex := SaveItemIndex + 1;
+
+    ChangesMade := True;
+  end;
+end;
+
+procedure TfrmPathEditorMain.actMoveUpExecute(Sender: TObject);
+var
+  SavePath: string;
+  SaveItemIndex: Integer;
+begin
+  if lbPaths.ItemIndex > 0 then begin
+    SaveItemIndex := lbPaths.ItemIndex;
+    SavePath := lbPaths.Items[SaveItemIndex - 1];
+    lbPaths.Items[SaveItemIndex - 1] := lbPaths.Items[SaveItemIndex];
+    lbPaths.Items[SaveItemIndex] := SavePath;
+    lbPaths.ItemIndex := SaveItemIndex - 1;
+
+    ChangesMade := True;
+  end;
+end;
+
+procedure TfrmPathEditorMain.actRemoveExecute(Sender: TObject);
+var
+  SaveItemIndex: Integer;
+begin
+  if lbPaths.ItemIndex > -1 then begin
+    SaveItemIndex := lbPaths.ItemIndex;
+    lbPaths.Items.Delete(SaveItemIndex);
+    lbPaths.ItemIndex := SaveItemIndex - 1;
+
+    ChangesMade := True;
+  end;
+end;
 
 procedure TfrmPathEditorMain.AddDelphiPath(const BDSKey: string);
 var
@@ -129,6 +219,44 @@ begin
   end;
 
   {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'AddDelphiPath'); {$ENDIF}
+end;
+
+procedure TfrmPathEditorMain.ListPaths;
+var
+  BDSPathEntry: TBDSPathEntry;
+begin
+  {$IFDEF UseCodeSite} CodeSite.EnterMethod( Self, 'ListPaths' ); {$ENDIF}
+
+  if (cmbDelphis.ItemIndex > -1) and Assigned(cmbDelphis.Items.Objects[cmbDelphis.ItemIndex]) then begin
+    BDSPathEntry := cmbDelphis.Items.Objects[cmbDelphis.ItemIndex] as TBDSPathEntry;
+    lbPaths.Items.Delimiter := ';';
+    lbPaths.Items.StrictDelimiter := True;
+    lbPaths.Items.DelimitedText := BDSPathEntry.EnvVarPath;
+
+    ChangesMade := False;
+  end;
+
+  {$IFDEF UseCodeSite} CodeSite.ExitMethod( Self, 'ListPaths' ); {$ENDIF}
+end;
+
+procedure TfrmPathEditorMain.SetChangesMade(const Value: Boolean);
+begin
+  FChangesMade := Value;
+  lblChangeIndicator.Visible := FChangesMade;
+  cmbDelphis.Enabled := not FChangesMade;
+
+  actCancel.Enabled := ChangesMade;
+  actSave.Enabled := ChangesMade;
+end;
+
+procedure TfrmPathEditorMain.cmbDelphisChange(Sender: TObject);
+begin
+  ListPaths;
+end;
+
+procedure TfrmPathEditorMain.cmbDelphisCloseUp(Sender: TObject);
+begin
+  ListPaths;
 end;
 
 procedure TfrmPathEditorMain.cmbThemeClick(Sender: TObject);
@@ -186,6 +314,12 @@ begin
   cmbTheme.ItemIndex := cmbTheme.Items.IndexOf(TStyleManager.ActiveStyle.Name);
 
   {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'InitThemes'); {$ENDIF}
+end;
+
+procedure TfrmPathEditorMain.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+  if ChangesMade then
+    CanClose := dlgCancelChangesPrompt.Execute and (dlgCancelChangesPrompt.ModalResult = mrYes);
 end;
 
 procedure TfrmPathEditorMain.FormCreate(Sender: TObject);
