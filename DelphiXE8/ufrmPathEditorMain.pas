@@ -34,8 +34,8 @@ type
     Copy1: TMenuItem;
     Paste1: TMenuItem;
     actEditCut: TEditCut;
-    edtEditCopy: TEditCopy;
-    edtEditPaste: TEditPaste;
+    actEditCopy: TEditCopy;
+    actEditPaste: TEditPaste;
     N3: TMenuItem;
     actMoveUp: TAction;
     actMoveDown: TAction;
@@ -68,6 +68,9 @@ type
     procedure actMoveDownExecute(Sender: TObject);
     procedure actCancelExecute(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure actEditCutExecute(Sender: TObject);
+    procedure actEditCopyExecute(Sender: TObject);
+    procedure actEditPasteExecute(Sender: TObject);
   private
     const
       BDS_RegPath = 'Software\Embarcadero\BDS';
@@ -97,7 +100,7 @@ implementation
 {$R *.dfm}
 
 uses
-  Registry,
+  Registry, Clipbrd,
   VCL.Themes;
 
 { TfrmPathEditorMain.TBDSPathEntry }
@@ -146,6 +149,32 @@ begin
   if ChangesMade then
     if dlgCancelChangesPrompt.Execute and (dlgCancelChangesPrompt.ModalResult = mrYes) then
       ListPaths;
+end;
+
+procedure TfrmPathEditorMain.actEditCopyExecute(Sender: TObject);
+begin
+  if lbPaths.ItemIndex > -1 then
+    Clipboard.AsText := lbPaths.Items[lbPaths.ItemIndex];
+end;
+
+procedure TfrmPathEditorMain.actEditCutExecute(Sender: TObject);
+begin
+  if lbPaths.ItemIndex > -1 then begin
+    Clipboard.AsText := lbPaths.Items[lbPaths.ItemIndex];
+    lbPaths.Items.Delete(lbPaths.ItemIndex);
+  end;
+
+  ChangesMade := True;
+end;
+
+procedure TfrmPathEditorMain.actEditPasteExecute(Sender: TObject);
+begin
+  if lbPaths.ItemIndex = -1 then
+    lbPaths.ItemIndex := 0;
+
+  lbPaths.Items.Insert(lbPaths.ItemIndex, Clipboard.AsText);
+
+  ChangesMade := True;
 end;
 
 procedure TfrmPathEditorMain.actMoveDownExecute(Sender: TObject);
@@ -233,6 +262,8 @@ begin
     lbPaths.Items.StrictDelimiter := True;
     lbPaths.Items.DelimitedText := BDSPathEntry.EnvVarPath;
 
+    lbPaths.ItemIndex := -1;
+
     ChangesMade := False;
   end;
 
@@ -247,6 +278,14 @@ begin
 
   actCancel.Enabled := ChangesMade;
   actSave.Enabled := ChangesMade;
+
+  actAdd.Enabled := lbPaths.Items.Count > 0;
+  actRemove.Enabled := lbPaths.Items.Count > 0;
+  actEditCut.Enabled := lbPaths.Items.Count > 0;
+  actEditCopy.Enabled := lbPaths.Items.Count > 0;
+  actEditPaste.Enabled := lbPaths.Items.Count > 0;
+  actMoveUp.Enabled := lbPaths.Items.Count > 0;
+  actMoveDown.Enabled := lbPaths.Items.Count > 0;
 end;
 
 procedure TfrmPathEditorMain.cmbDelphisChange(Sender: TObject);
@@ -269,6 +308,7 @@ var
   reg: TRegistry;
   bdsKey: string;
   bdsKeys: TStringList;
+  delphi_vr: string;
 begin
   {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'InitDelphis'); {$ENDIF}
 
@@ -292,6 +332,15 @@ begin
   finally
     reg.Free;
   end;
+
+  // restore saved setting
+  delphi_vr := Trim(ccRegistryLayoutSaver.ResstoreStrValue('LastDelphiProduct'));
+  if Length(delphi_vr) > 0 then
+    cmbDelphis.ItemIndex := cmbDelphis.Items.IndexOf(delphi_vr)
+  else
+    cmbDelphis.ItemIndex := 0;
+
+  ListPaths;
 
   {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'InitDelphis'); {$ENDIF}
 end;
@@ -337,6 +386,7 @@ begin
   {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'FormDestroy'); {$ENDIF}
 
   ccRegistryLayoutSaver.SaveStrValue('Theme', TStyleManager.ActiveStyle.Name);
+  ccRegistryLayoutSaver.SaveStrValue('LastDelphiProduct', cmbDelphis.Text);
 
   {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'FormDestroy'); {$ENDIF}
 end;

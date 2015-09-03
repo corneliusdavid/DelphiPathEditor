@@ -68,53 +68,59 @@ object frmPathEditorMain: TfrmPathEditorMain
     OnClick = cmbThemeClick
   end
   object ToolBar1: TToolBar
-    Left = 48
-    Top = 120
-    Width = 161
-    Height = 73
-    Align = alNone
+    Left = 665
+    Top = 0
+    Width = 31
+    Height = 361
+    Align = alRight
     ButtonHeight = 30
     ButtonWidth = 30
     Caption = 'ToolBar1'
     Images = imlActions
     TabOrder = 2
+    ExplicitLeft = 672
+    ExplicitTop = -8
     object ToolButton1: TToolButton
       Left = 0
       Top = 0
       Action = actSave
+      Wrap = True
     end
     object ToolButton2: TToolButton
-      Left = 30
-      Top = 0
+      Left = 0
+      Top = 30
       Action = actCancel
     end
     object ToolButton6: TToolButton
-      Left = 60
-      Top = 0
+      Left = 0
+      Top = 30
       Width = 8
       Caption = 'ToolButton6'
       ImageIndex = 7
+      Wrap = True
       Style = tbsSeparator
     end
     object ToolButton3: TToolButton
-      Left = 68
-      Top = 0
-      Action = edtEditCopy
+      Left = 0
+      Top = 68
+      Action = actEditCopy
+      Wrap = True
       Style = tbsCheck
     end
     object ToolButton4: TToolButton
-      Left = 98
-      Top = 0
+      Left = 0
+      Top = 98
       Action = actEditCut
+      Wrap = True
     end
     object ToolButton5: TToolButton
-      Left = 128
-      Top = 0
-      Action = edtEditPaste
+      Left = 0
+      Top = 128
+      Action = actEditPaste
     end
     object ToolButton7: TToolButton
       Left = 0
-      Top = 0
+      Top = 128
       Width = 8
       Caption = 'ToolButton7'
       ImageIndex = 7
@@ -123,37 +129,40 @@ object frmPathEditorMain: TfrmPathEditorMain
     end
     object ToolButton8: TToolButton
       Left = 0
-      Top = 38
+      Top = 166
       Action = actAdd
+      Wrap = True
     end
     object ToolButton9: TToolButton
-      Left = 30
-      Top = 38
+      Left = 0
+      Top = 196
       Action = actRemove
     end
     object ToolButton10: TToolButton
-      Left = 60
-      Top = 38
+      Left = 0
+      Top = 196
       Width = 8
       Caption = 'ToolButton10'
       ImageIndex = 4
+      Wrap = True
       Style = tbsSeparator
     end
     object ToolButton11: TToolButton
-      Left = 68
-      Top = 38
+      Left = 0
+      Top = 234
       Action = actMoveUp
+      Wrap = True
     end
     object ToolButton12: TToolButton
-      Left = 98
-      Top = 38
+      Left = 0
+      Top = 264
       Action = actMoveDown
     end
   end
   object lbPaths: TListBox
-    Left = 248
+    Left = 256
     Top = 0
-    Width = 448
+    Width = 409
     Height = 361
     Align = alRight
     Anchors = [akLeft, akTop, akRight, akBottom]
@@ -164,7 +173,7 @@ object frmPathEditorMain: TfrmPathEditorMain
     Left = 176
     Top = 256
     Bitmap = {
-      494C010109005800400010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010109005800440010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001002000000000000030
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000C5600D00C965110000000000000000000000
@@ -607,20 +616,23 @@ object frmPathEditorMain: TfrmPathEditorMain
       Hint = 'Cut|Cuts the selected path and puts it on the Clipboard'
       ImageIndex = 4
       ShortCut = 16472
+      OnExecute = actEditCutExecute
     end
-    object edtEditCopy: TEditCopy
+    object actEditCopy: TEditCopy
       Category = 'Edit'
       Caption = '&Copy'
       Hint = 'Copy|Copies the selected path and puts it on the Clipboard'
       ImageIndex = 5
       ShortCut = 16451
+      OnExecute = actEditCopyExecute
     end
-    object edtEditPaste: TEditPaste
+    object actEditPaste: TEditPaste
       Category = 'Edit'
       Caption = '&Paste'
       Hint = 'Paste|Inserts the path from the Clipboard'
       ImageIndex = 6
       ShortCut = 16470
+      OnExecute = actEditPasteExecute
     end
     object actMoveUp: TAction
       Caption = 'Move Up'
