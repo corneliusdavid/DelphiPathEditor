@@ -12,8 +12,6 @@ type
   TfrmPathEditorMain = class(TForm)
     Label1: TLabel;
     cmbDelphis: TComboBox;
-    Label2: TLabel;
-    cmbTheme: TComboBox;
     imlActions: TImageList;
     actPathActions: TActionList;
     actSave: TAction;
@@ -45,8 +43,6 @@ type
     dlgCancelChangesPrompt: TTaskDialog;
     dlgSaveChangesPrompt: TTaskDialog;
     ToolBar1: TToolBar;
-    ToolButton1: TToolButton;
-    ToolButton2: TToolButton;
     ToolButton6: TToolButton;
     ToolButton3: TToolButton;
     ToolButton4: TToolButton;
@@ -58,8 +54,15 @@ type
     ToolButton11: TToolButton;
     ToolButton12: TToolButton;
     lbPaths: TListBox;
+    txtDelphiInfo: TStaticText;
+    StatusBar: TStatusBar;
+    actBrowseForFolder: TBrowseForFolder;
+    actEditModify: TAction;
+    BitBtn1: TBitBtn;
+    BitBtn2: TBitBtn;
+    ToolButton1: TToolButton;
+    ToolButton2: TToolButton;
     procedure FormCreate(Sender: TObject);
-    procedure cmbThemeClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure cmbDelphisChange(Sender: TObject);
     procedure cmbDelphisCloseUp(Sender: TObject);
@@ -71,41 +74,55 @@ type
     procedure actEditCutExecute(Sender: TObject);
     procedure actEditCopyExecute(Sender: TObject);
     procedure actEditPasteExecute(Sender: TObject);
+    procedure actSaveExecute(Sender: TObject);
+    procedure actAddExecute(Sender: TObject);
+    procedure actEditModifyExecute(Sender: TObject);
+    procedure lbPathsClick(Sender: TObject);
   private
     const
       BDS_RegPath = 'Software\Embarcadero\BDS';
     type
       TBDSPathEntry = class
       public
+        BDSKey: string;
         DelphiVersion: string;
+        CompilerVer: string;
+        DelphiInstallPath: string;
         RegistryPath: string;
         EnvVarPath: string;
-        constructor Create(const BDSKey, RegPath, CurrEnvVarPath: string);
+        constructor Create(const NewBDSKey, NewRegPath, NewEnvVarPath, NewInstallPath: string);
       end;
     var
       FChangesMade: Boolean;
-    procedure ListPaths;
-    procedure InitThemes;
+    function GetInstallPath(const BDSKey: string): string;
+    function GetEnvironPaths(const BDSKey: string): string;
+    function BuildEnvironmentVarRegPath(const BDSKey: string): string;
     procedure InitDelphis;
-    procedure AddDelphiPath(const BDSKey: string);
+    procedure ParseAndListPaths(const EnvironmentVarPaths: string);
+    procedure ListPathsForCurrentProduct;
+    procedure WritePaths(BDSEntry: TBDSPathEntry);
+    procedure SaveCurrentPaths;
+    procedure AddDelphiEntry(const BDSKey: string);
     procedure SetChangesMade(const Value: Boolean);
     property ChangesMade: Boolean read FChangesMade write SetChangesMade;
+    procedure ToggleEditActions;
   end;
 
 var
   frmPathEditorMain: TfrmPathEditorMain;
 
+
 implementation
+
 
 {$R *.dfm}
 
 uses
-  Registry, Clipbrd,
-  VCL.Themes;
+  Registry, Clipbrd;
 
 { TfrmPathEditorMain.TBDSPathEntry }
 
-constructor TfrmPathEditorMain.TBDSPathEntry.Create(const BDSKey, RegPath, CurrEnvVarPath: string);
+constructor TfrmPathEditorMain.TBDSPathEntry.Create(const NewBDSKey, NewRegPath, NewEnvVarPath, NewInstallPath: string);
 var
   BDSVr: Double;
   IntVer: Integer;
@@ -115,40 +132,64 @@ begin
   {$IFDEF UseCodeSite} CodeSite.Send('Registry Path to Environment Variables', RegPath); {$ENDIF}
   {$IFDEF UseCodeSite} CodeSite.Send('Path setting', CurrEnvVarPath); {$ENDIF}
 
+  BDSKey := NewBDSKey;
+  RegistryPath := NewRegPath;
+  EnvVarPath := NewEnvVarPath;
+  DelphiInstallPath := NewInstallPath;
+
   if TryStrToFloat(BDSKey, BDSVr) then
     IntVer := Round(BDSVr * 10.0)
   else
     IntVer := 0;
 
   case IntVer of
-    70 : DelphiVersion := 'Vr 14: "Delphi 2010"';
-    80 : DelphiVersion := 'Vr 15: "Delphi XE"';
-    90 : DelphiVersion := 'Vr 16: "Delphi XE2"';
-    100: DelphiVersion := 'Vr 17: "Delphi XE3"';
-    110: DelphiVersion := 'Vr 18: "Delphi XE4"';
-    120: DelphiVersion := 'Vr 19: "Delphi XE5"';
-    140: DelphiVersion := 'Vr 20: "Delphi XE6"';
-    150: DelphiVersion := 'Vr 21: "Delphi XE7"';
-    160: DelphiVersion := 'Vr 22: "Delphi XE8"';
-    170: DelphiVersion := 'Vr 23: "Delphi 10 Seattle"';
-  else
-    DelphiVersion := 'N/A';
+    60 : begin DelphiVersion := 'BDS 06: "Delphi 2009"';       CompilerVer := 'Compiler vr. 13' end;
+    70 : begin DelphiVersion := 'BDS 07: "Delphi 2010"';       CompilerVer := 'Compiler vr. 14' end;
+    80 : begin DelphiVersion := 'BDS 08: "Delphi XE"';         CompilerVer := 'Compiler vr. 15' end;
+    90 : begin DelphiVersion := 'BDS 09: "Delphi XE2"';        CompilerVer := 'Compiler vr. 16' end;
+    100: begin DelphiVersion := 'BDS 10: "Delphi XE3"';        CompilerVer := 'Compiler vr. 17' end;
+    110: begin DelphiVersion := 'BDS 11: "Delphi XE4"';        CompilerVer := 'Compiler vr. 18' end;
+    120: begin DelphiVersion := 'BDS 12: "Delphi XE5"';        CompilerVer := 'Compiler vr. 19' end;
+    140: begin DelphiVersion := 'BDS 14: "Delphi XE6"';        CompilerVer := 'Compiler vr. 20' end;
+    150: begin DelphiVersion := 'BDS 15: "Delphi XE7"';        CompilerVer := 'Compiler vr. 21' end;
+    160: begin DelphiVersion := 'BDS 16: "Delphi XE8"';        CompilerVer := 'Compiler vr. 22' end;
+    170: begin DelphiVersion := 'BDS 17: "Delphi 10 Seattle"'; CompilerVer := 'Compiler vr. 23' end;
+    else begin DelphiVersion := 'N/A';                         CompilerVer := 'N/A'; end;
   end;
   {$IFDEF UseCodeSite} CodeSite.Send('Delphi Version', DelphiVersion); {$ENDIF}
 
-  RegistryPath := RegPath;
-  EnvVarPath := CurrEnvVarPath;
 
   {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'Create'); {$ENDIF}
 end;
 
 { TfrmPathEditorMain }
 
+procedure TfrmPathEditorMain.actSaveExecute(Sender: TObject);
+begin
+  if ChangesMade then begin
+    SaveCurrentPaths;
+    ChangesMade := False;
+    cmbDelphis.SetFocus;
+  end;
+end;
+
+procedure TfrmPathEditorMain.actAddExecute(Sender: TObject);
+begin
+  if actBrowseForFolder.Execute then begin
+    if lbPaths.ItemIndex = -1 then
+      lbPaths.Items.Add(actBrowseForFolder.Folder)
+    else
+      lbPaths.Items.Insert(lbPaths.ItemIndex + 1, actBrowseForFolder.Folder);
+
+    ChangesMade := True;
+  end;
+end;
+
 procedure TfrmPathEditorMain.actCancelExecute(Sender: TObject);
 begin
   if ChangesMade then
     if dlgCancelChangesPrompt.Execute and (dlgCancelChangesPrompt.ModalResult = mrYes) then
-      ListPaths;
+      ListPathsForCurrentProduct;
 end;
 
 procedure TfrmPathEditorMain.actEditCopyExecute(Sender: TObject);
@@ -162,9 +203,21 @@ begin
   if lbPaths.ItemIndex > -1 then begin
     Clipboard.AsText := lbPaths.Items[lbPaths.ItemIndex];
     lbPaths.Items.Delete(lbPaths.ItemIndex);
-  end;
 
-  ChangesMade := True;
+    ChangesMade := True;
+  end;
+end;
+
+procedure TfrmPathEditorMain.actEditModifyExecute(Sender: TObject);
+begin
+  if lbPaths.ItemIndex > -1 then begin
+    actBrowseForFolder.Folder := lbPaths.Items[lbPaths.ItemIndex];
+    if actBrowseForFolder.Execute then begin
+      lbPaths.Items[lbPaths.ItemIndex] := actBrowseForFolder.Folder;
+
+      ChangesMade := True;
+    end;
+  end;
 end;
 
 procedure TfrmPathEditorMain.actEditPasteExecute(Sender: TObject);
@@ -216,58 +269,46 @@ begin
   if lbPaths.ItemIndex > -1 then begin
     SaveItemIndex := lbPaths.ItemIndex;
     lbPaths.Items.Delete(SaveItemIndex);
-    lbPaths.ItemIndex := SaveItemIndex - 1;
+    lbPaths.ItemIndex := SaveItemIndex;
 
     ChangesMade := True;
   end;
 end;
 
-procedure TfrmPathEditorMain.AddDelphiPath(const BDSKey: string);
+procedure TfrmPathEditorMain.AddDelphiEntry(const BDSKey: string);
 var
-  reg: TRegistry;
-  EnvVarPath: string;
-  EnvironPath: string;
   BDSEntry: TBDSPathEntry;
 begin
-  {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'AddDelphiPath'); {$ENDIF}
-  {$IFDEF UseCodeSite} CodeSite.Send('BDSKey', BDSKey); {$ENDIF}
-
-  reg := TRegistry.Create;
-  try
-    reg.RootKey := HKEY_CURRENT_USER;
-    EnvVarPath := BDS_RegPath + '\' + BDSKey + '\Environment Variables';
-    if reg.OpenKeyReadOnly(EnvVarPath) then begin
-      EnvironPath := reg.ReadString('Path');
-      BDSEntry := TBDSPathEntry.Create(BDSKey, EnvVarPath, EnvironPath);
-      if Assigned(BDSEntry) then
-        cmbDelphis.Items.AddObject(BDSEntry.DelphiVersion, BDSEntry);
-      reg.CloseKey;
-    end;
-  finally
-    reg.Free;
-  end;
-
-  {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'AddDelphiPath'); {$ENDIF}
+  BDSEntry := TBDSPathEntry.Create(BDSKey, BuildEnvironmentVarRegPath(BDSKey),
+                                           GetEnvironPaths(BDSKey),
+                                           GetInstallPath(BDSKey));
+  if Assigned(BDSEntry) then
+    cmbDelphis.Items.AddObject(BDSEntry.DelphiVersion, BDSEntry);
 end;
 
-procedure TfrmPathEditorMain.ListPaths;
+procedure TfrmPathEditorMain.ParseAndListPaths(const EnvironmentVarPaths: string);
+begin
+  lbPaths.Items.DelimitedText := EnvironmentVarPaths;
+  lbPaths.ItemIndex := -1;
+  ChangesMade := False;
+end;
+
+procedure TfrmPathEditorMain.ListPathsForCurrentProduct;
+const
+  CRLF = #13#10;
 var
   BDSPathEntry: TBDSPathEntry;
 begin
-  {$IFDEF UseCodeSite} CodeSite.EnterMethod( Self, 'ListPaths' ); {$ENDIF}
-
   if (cmbDelphis.ItemIndex > -1) and Assigned(cmbDelphis.Items.Objects[cmbDelphis.ItemIndex]) then begin
     BDSPathEntry := cmbDelphis.Items.Objects[cmbDelphis.ItemIndex] as TBDSPathEntry;
-    lbPaths.Items.Delimiter := ';';
-    lbPaths.Items.StrictDelimiter := True;
-    lbPaths.Items.DelimitedText := BDSPathEntry.EnvVarPath;
+    ParseAndListPaths(BDSPathEntry.EnvVarPath);
 
-    lbPaths.ItemIndex := -1;
-
-    ChangesMade := False;
+    // other useful info
+    StatusBar.Panels[1].Text := 'Registry Path: HKEY_CURRENT_USER\' + BDSPathEntry.RegistryPath;
+    txtDelphiInfo.Caption := BDSPathEntry.CompilerVer + CRLF + CRLF +
+                             'Installed at:' + CRLF +
+                             BDSPathEntry.DelphiInstallPath;
   end;
-
-  {$IFDEF UseCodeSite} CodeSite.ExitMethod( Self, 'ListPaths' ); {$ENDIF}
 end;
 
 procedure TfrmPathEditorMain.SetChangesMade(const Value: Boolean);
@@ -276,31 +317,99 @@ begin
   lblChangeIndicator.Visible := FChangesMade;
   cmbDelphis.Enabled := not FChangesMade;
 
-  actCancel.Enabled := ChangesMade;
-  actSave.Enabled := ChangesMade;
+  actCancel.Visible := ChangesMade;
+  actSave.Visible := ChangesMade;
 
+  ToggleEditActions;
+end;
+
+procedure TfrmPathEditorMain.ToggleEditActions;
+begin
   actAdd.Enabled := lbPaths.Items.Count > 0;
   actRemove.Enabled := lbPaths.Items.Count > 0;
   actEditCut.Enabled := lbPaths.Items.Count > 0;
   actEditCopy.Enabled := lbPaths.Items.Count > 0;
   actEditPaste.Enabled := lbPaths.Items.Count > 0;
-  actMoveUp.Enabled := lbPaths.Items.Count > 0;
-  actMoveDown.Enabled := lbPaths.Items.Count > 0;
+  actMoveUp.Enabled := (lbPaths.Items.Count > 0) and (lbPaths.ItemIndex > 0);
+  actMoveDown.Enabled := (lbPaths.Items.Count > 0) and (lbPaths.ItemIndex < lbPaths.Items.Count - 1);
+end;
+
+function TfrmPathEditorMain.BuildEnvironmentVarRegPath(const BDSKey: string): string;
+begin
+  Result := BDS_RegPath + '\' + BDSKey + '\Environment Variables';
+end;
+
+function TfrmPathEditorMain.GetEnvironPaths(const BDSKey: string): string;
+var
+  reg: TRegistry;
+begin
+  reg := TRegistry.Create;
+  try
+    if reg.OpenKeyReadOnly(BuildEnvironmentVarRegPath(BDSKey)) then begin
+      Result := reg.ReadString('Path');
+      reg.CloseKey;
+    end;
+  finally
+    reg.Free;
+  end;
+end;
+
+function TfrmPathEditorMain.GetInstallPath(const BDSKey: string): string;
+var
+  reg: TRegistry;
+begin
+  reg := TRegistry.Create;
+  try
+    reg.RootKey := HKEY_CURRENT_USER;
+    if reg.OpenKeyReadOnly(BDS_RegPath + '\' + BDSKey) then begin
+      Result := reg.ReadString('RootDir');
+      reg.CloseKey;
+    end else
+      Result := EmptyStr;
+  finally
+    reg.Free;
+  end;
+end;
+
+procedure TfrmPathEditorMain.SaveCurrentPaths;
+var
+  CurrBDSEntry: TBDSPathEntry;
+begin
+  CurrBDSEntry := cmbDelphis.Items.Objects[cmbDelphis.ItemIndex] as TBDSPathEntry;
+  CurrBDSEntry.EnvVarPath := lbPaths.Items.DelimitedText;
+  WritePaths(CurrBDSEntry);
+end;
+
+procedure TfrmPathEditorMain.WritePaths(BDSEntry: TBDSPathEntry);
+var
+  reg: TRegistry;
+begin
+  {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'WritePaths'); {$ENDIF}
+  {$IFDEF UseCodeSite} CodeSite.Send( 'RegistryPath', RegistryPath ); {$ENDIF}
+
+  reg := TRegistry.Create;
+  try
+    reg.RootKey := HKEY_CURRENT_USER;
+    if reg.OpenKey(BDSEntry.RegistryPath, False) then begin
+      reg.LazyWrite := False;
+      reg.WriteString('Path', BDSEntry.EnvVarPath);
+      reg.CloseKey;
+    end;
+  finally
+    reg.Free;
+  end;
+
+  {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'WritePaths'); {$ENDIF}
 end;
 
 procedure TfrmPathEditorMain.cmbDelphisChange(Sender: TObject);
 begin
-  ListPaths;
+  ListPathsForCurrentProduct;
 end;
 
 procedure TfrmPathEditorMain.cmbDelphisCloseUp(Sender: TObject);
 begin
-  ListPaths;
-end;
-
-procedure TfrmPathEditorMain.cmbThemeClick(Sender: TObject);
-begin
-  TStyleManager.SetStyle(cmbTheme.Text);
+  ListPathsForCurrentProduct;
 end;
 
 procedure TfrmPathEditorMain.InitDelphis;
@@ -308,9 +417,10 @@ var
   reg: TRegistry;
   bdsKey: string;
   bdsKeys: TStringList;
-  delphi_vr: string;
+  last_delphi: string;
 begin
-  {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'InitDelphis'); {$ENDIF}
+  lbPaths.Items.Delimiter := ';';
+  lbPaths.Items.StrictDelimiter := True;
 
   reg := TRegistry.Create;
   try
@@ -320,7 +430,7 @@ begin
       try
         reg.GetKeyNames(bdsKeys);
         for bdsKey in bdsKeys do
-          AddDelphiPath(bdsKey);
+          AddDelphiEntry(bdsKey);
       finally
         bdsKeys.Free;
       end;
@@ -334,61 +444,49 @@ begin
   end;
 
   // restore saved setting
-  delphi_vr := Trim(ccRegistryLayoutSaver.ResstoreStrValue('LastDelphiProduct'));
-  if Length(delphi_vr) > 0 then
-    cmbDelphis.ItemIndex := cmbDelphis.Items.IndexOf(delphi_vr)
+  last_delphi := Trim(ccRegistryLayoutSaver.ResstoreStrValue('LastDelphiProduct'));
+  if Length(last_delphi) > 0 then
+    cmbDelphis.ItemIndex := cmbDelphis.Items.IndexOf(last_delphi)
   else
     cmbDelphis.ItemIndex := 0;
 
-  ListPaths;
-
-  {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'InitDelphis'); {$ENDIF}
+  ListPathsForCurrentProduct;
 end;
 
-procedure TfrmPathEditorMain.InitThemes;
-var
-  style: string;
+procedure TfrmPathEditorMain.lbPathsClick(Sender: TObject);
 begin
-  {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'InitThemes'); {$ENDIF}
-
-  // load the combo box
-  for style in TStyleManager.StyleNames do
-    cmbTheme.Items.Add(style);
-
-  // restore saved setting
-  style := Trim(ccRegistryLayoutSaver.ResstoreStrValue('Theme'));
-  if Length(style) > 0 then
-    TStyleManager.SetStyle(style);
-
-  cmbTheme.ItemIndex := cmbTheme.Items.IndexOf(TStyleManager.ActiveStyle.Name);
-
-  {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'InitThemes'); {$ENDIF}
+  ToggleEditActions;
 end;
 
 procedure TfrmPathEditorMain.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
-  if ChangesMade then
-    CanClose := dlgCancelChangesPrompt.Execute and (dlgCancelChangesPrompt.ModalResult = mrYes);
+  if ChangesMade then begin
+    if dlgSaveChangesPrompt.Execute then
+      case dlgSaveChangesPrompt.ModalResult of
+        mrYes:
+          begin
+            SaveCurrentPaths;
+            CanClose := True;
+          end;
+        mrNo:
+          CanClose := True;
+        mrCancel:
+          CanClose := False;
+      end
+    else
+      CanClose := False;
+  end else
+    CanClose := True;
 end;
 
 procedure TfrmPathEditorMain.FormCreate(Sender: TObject);
 begin
-  {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'FormCreate'); {$ENDIF}
-
   InitDelphis;
-  InitThemes;
-
-  {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'FormCreate'); {$ENDIF}
 end;
 
 procedure TfrmPathEditorMain.FormDestroy(Sender: TObject);
 begin
-  {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'FormDestroy'); {$ENDIF}
-
-  ccRegistryLayoutSaver.SaveStrValue('Theme', TStyleManager.ActiveStyle.Name);
   ccRegistryLayoutSaver.SaveStrValue('LastDelphiProduct', cmbDelphis.Text);
-
-  {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'FormDestroy'); {$ENDIF}
 end;
 
 end.
