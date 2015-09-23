@@ -155,9 +155,6 @@ object frmPathEditorMain: TfrmPathEditorMain
     PopupMenu = mnuPathActions
     TabOrder = 2
     OnClick = lbPathsClick
-    ExplicitLeft = 240
-    ExplicitWidth = 425
-    ExplicitHeight = 342
   end
   object txtDelphiInfo: TStaticText
     Left = 24
@@ -179,8 +176,6 @@ object frmPathEditorMain: TfrmPathEditorMain
       item
         Width = 50
       end>
-    ExplicitTop = 342
-    ExplicitWidth = 696
   end
   object BitBtn1: TBitBtn
     Left = 24
@@ -204,7 +199,7 @@ object frmPathEditorMain: TfrmPathEditorMain
     Left = 176
     Top = 256
     Bitmap = {
-      494C01010A005800680010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01010A005800700010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001002000000000000030
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000C5600D00C965110000000000000000000000
@@ -692,6 +687,7 @@ object frmPathEditorMain: TfrmPathEditorMain
       Caption = 'Select Folder'
       DialogCaption = 'Select Folder'
       BrowseOptions = []
+      BrowseOptionsEx = []
     end
     object actEditModify: TAction
       Category = 'Edit'

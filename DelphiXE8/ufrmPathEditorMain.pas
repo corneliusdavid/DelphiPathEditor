@@ -118,6 +118,7 @@ implementation
 {$R *.dfm}
 
 uses
+  {$IFDEF UseCodeSite} CodeSiteLogging, {$ENDIF}
   Registry, Clipbrd;
 
 { TfrmPathEditorMain.TBDSPathEntry }
@@ -128,9 +129,9 @@ var
   IntVer: Integer;
 begin
   {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'Create'); {$ENDIF}
-  {$IFDEF UseCodeSite} CodeSite.Send('BDSKey', BDSKey); {$ENDIF}
-  {$IFDEF UseCodeSite} CodeSite.Send('Registry Path to Environment Variables', RegPath); {$ENDIF}
-  {$IFDEF UseCodeSite} CodeSite.Send('Path setting', CurrEnvVarPath); {$ENDIF}
+  {$IFDEF UseCodeSite} CodeSite.Send('NewBDSKey', NewBDSKey); {$ENDIF}
+  {$IFDEF UseCodeSite} CodeSite.Send('New Registry Path to Environment Variables', NewRegPath); {$ENDIF}
+  {$IFDEF UseCodeSite} CodeSite.Send('New Path setting', NewEnvVarPath); {$ENDIF}
 
   BDSKey := NewBDSKey;
   RegistryPath := NewRegPath;
@@ -157,7 +158,6 @@ begin
     else begin DelphiVersion := 'N/A';                         CompilerVer := 'N/A'; end;
   end;
   {$IFDEF UseCodeSite} CodeSite.Send('Delphi Version', DelphiVersion); {$ENDIF}
-
 
   {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'Create'); {$ENDIF}
 end;
@@ -385,7 +385,7 @@ var
   reg: TRegistry;
 begin
   {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'WritePaths'); {$ENDIF}
-  {$IFDEF UseCodeSite} CodeSite.Send( 'RegistryPath', RegistryPath ); {$ENDIF}
+  {$IFDEF UseCodeSite} CodeSite.Send( 'RegistryPath', BDSEntry.RegistryPath ); {$ENDIF}
 
   reg := TRegistry.Create;
   try
