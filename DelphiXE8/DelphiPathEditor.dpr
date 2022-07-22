@@ -11,7 +11,6 @@ uses
 begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
-  TStyleManager.TrySetStyle('Aqua Light Slate');
   Application.CreateForm(TfrmPathEditorMain, frmPathEditorMain);
   Application.Run;
 end.
