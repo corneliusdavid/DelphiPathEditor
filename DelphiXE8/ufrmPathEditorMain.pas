@@ -43,7 +43,6 @@ type
     dlgCancelChangesPrompt: TTaskDialog;
     dlgSaveChangesPrompt: TTaskDialog;
     ToolBar1: TToolBar;
-    ToolButton6: TToolButton;
     ToolButton3: TToolButton;
     ToolButton4: TToolButton;
     ToolButton5: TToolButton;
@@ -61,7 +60,6 @@ type
     BitBtn1: TBitBtn;
     BitBtn2: TBitBtn;
     ToolButton1: TToolButton;
-    ToolButton2: TToolButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure cmbDelphisChange(Sender: TObject);
@@ -97,6 +95,7 @@ type
     function GetInstallPath(const BDSKey: string): string;
     function GetEnvironPaths(const BDSKey: string): string;
     function BuildEnvironmentVarRegPath(const BDSKey: string): string;
+    function DelphiHasRegEntries(const BDSKey: string): Boolean;
     procedure InitDelphis;
     procedure ParseAndListPaths(const EnvironmentVarPaths: string);
     procedure ListPathsForCurrentProduct;
@@ -118,7 +117,6 @@ implementation
 {$R *.dfm}
 
 uses
-  {$IFDEF UseCodeSite} CodeSiteLogging, {$ENDIF}
   Registry, Clipbrd;
 
 { TfrmPathEditorMain.TBDSPathEntry }
@@ -128,11 +126,6 @@ var
   BDSVr: Double;
   IntVer: Integer;
 begin
-  {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'Create'); {$ENDIF}
-  {$IFDEF UseCodeSite} CodeSite.Send('NewBDSKey', NewBDSKey); {$ENDIF}
-  {$IFDEF UseCodeSite} CodeSite.Send('New Registry Path to Environment Variables', NewRegPath); {$ENDIF}
-  {$IFDEF UseCodeSite} CodeSite.Send('New Path setting', NewEnvVarPath); {$ENDIF}
-
   BDSKey := NewBDSKey;
   RegistryPath := NewRegPath;
   EnvVarPath := NewEnvVarPath;
@@ -144,22 +137,24 @@ begin
     IntVer := 0;
 
   case IntVer of
-    60 : begin DelphiVersion := 'BDS 06: "Delphi 2009"';       CompilerVer := 'Compiler vr. 13' end;
-    70 : begin DelphiVersion := 'BDS 07: "Delphi 2010"';       CompilerVer := 'Compiler vr. 14' end;
-    80 : begin DelphiVersion := 'BDS 08: "Delphi XE"';         CompilerVer := 'Compiler vr. 15' end;
-    90 : begin DelphiVersion := 'BDS 09: "Delphi XE2"';        CompilerVer := 'Compiler vr. 16' end;
-    100: begin DelphiVersion := 'BDS 10: "Delphi XE3"';        CompilerVer := 'Compiler vr. 17' end;
-    110: begin DelphiVersion := 'BDS 11: "Delphi XE4"';        CompilerVer := 'Compiler vr. 18' end;
-    120: begin DelphiVersion := 'BDS 12: "Delphi XE5"';        CompilerVer := 'Compiler vr. 19' end;
-    140: begin DelphiVersion := 'BDS 14: "Delphi XE6"';        CompilerVer := 'Compiler vr. 20' end;
-    150: begin DelphiVersion := 'BDS 15: "Delphi XE7"';        CompilerVer := 'Compiler vr. 21' end;
-    160: begin DelphiVersion := 'BDS 16: "Delphi XE8"';        CompilerVer := 'Compiler vr. 22' end;
-    170: begin DelphiVersion := 'BDS 17: "Delphi 10 Seattle"'; CompilerVer := 'Compiler vr. 23' end;
-    else begin DelphiVersion := 'N/A';                         CompilerVer := 'N/A'; end;
+    60 : begin DelphiVersion := 'BDS 06: "Delphi 2009"';          CompilerVer := 'Compiler vr. 13' end;
+    70 : begin DelphiVersion := 'BDS 07: "Delphi 2010"';          CompilerVer := 'Compiler vr. 14' end;
+    80 : begin DelphiVersion := 'BDS 08: "Delphi XE"';            CompilerVer := 'Compiler vr. 15' end;
+    90 : begin DelphiVersion := 'BDS 09: "Delphi XE2"';           CompilerVer := 'Compiler vr. 16' end;
+    100: begin DelphiVersion := 'BDS 10: "Delphi XE3"';           CompilerVer := 'Compiler vr. 17' end;
+    110: begin DelphiVersion := 'BDS 11: "Delphi XE4"';           CompilerVer := 'Compiler vr. 18' end;
+    120: begin DelphiVersion := 'BDS 12: "Delphi XE5"';           CompilerVer := 'Compiler vr. 19' end;
+    140: begin DelphiVersion := 'BDS 14: "Delphi XE6"';           CompilerVer := 'Compiler vr. 20' end;
+    150: begin DelphiVersion := 'BDS 15: "Delphi XE7"';           CompilerVer := 'Compiler vr. 21' end;
+    160: begin DelphiVersion := 'BDS 16: "Delphi XE8"';           CompilerVer := 'Compiler vr. 22' end;
+    170: begin DelphiVersion := 'BDS 17: "Delphi 10 Seattle"';    CompilerVer := 'Compiler vr. 23' end;
+    180: begin DelphiVersion := 'BDS 18: "Delphi 10.1 Berlin"';   CompilerVer := 'Compiler vr. 24' end;
+    190: begin DelphiVersion := 'BDS 19: "Delphi 10.2 Tokyo"';    CompilerVer := 'Compiler vr. 25' end;
+    200: begin DelphiVersion := 'BDS 20: "Delphi 10.3 Rio"';      CompilerVer := 'Compiler vr. 26' end;
+    210: begin DelphiVersion := 'BDS 21: "Delphi 10.4 Sydney"';   CompilerVer := 'Compiler vr. 27' end;
+    220: begin DelphiVersion := 'BDS 22: "Delphi 11 Alexandria"'; CompilerVer := 'Compiler vr. 28' end;
+    else begin DelphiVersion := 'N/A';                          CompilerVer := 'N/A'; end;
   end;
-  {$IFDEF UseCodeSite} CodeSite.Send('Delphi Version', DelphiVersion); {$ENDIF}
-
-  {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'Create'); {$ENDIF}
 end;
 
 { TfrmPathEditorMain }
@@ -384,9 +379,6 @@ procedure TfrmPathEditorMain.WritePaths(BDSEntry: TBDSPathEntry);
 var
   reg: TRegistry;
 begin
-  {$IFDEF UseCodeSite} CodeSite.EnterMethod(Self, 'WritePaths'); {$ENDIF}
-  {$IFDEF UseCodeSite} CodeSite.Send( 'RegistryPath', BDSEntry.RegistryPath ); {$ENDIF}
-
   reg := TRegistry.Create;
   try
     reg.RootKey := HKEY_CURRENT_USER;
@@ -398,8 +390,6 @@ begin
   finally
     reg.Free;
   end;
-
-  {$IFDEF UseCodeSite} CodeSite.ExitMethod(Self, 'WritePaths'); {$ENDIF}
 end;
 
 procedure TfrmPathEditorMain.cmbDelphisChange(Sender: TObject);
@@ -410,6 +400,28 @@ end;
 procedure TfrmPathEditorMain.cmbDelphisCloseUp(Sender: TObject);
 begin
   ListPathsForCurrentProduct;
+end;
+
+function TfrmPathEditorMain.DelphiHasRegEntries(const BDSKey: string): Boolean;
+var
+  reg: TRegistry;
+begin
+  Result := False;
+
+  reg := TRegistry.Create;
+  try
+    reg.RootKey := HKEY_CURRENT_USER;
+    if reg.OpenKeyReadOnly(BDS_RegPath + '\' + BDSKey) then begin
+      if reg.ValueExists('App') and
+         reg.ValueExists('ProductVersion') and
+         reg.ValueExists('RootDir') then
+        Result := True;
+
+      reg.CloseKey;
+    end;
+  finally
+    reg.Free;
+  end;
 end;
 
 procedure TfrmPathEditorMain.InitDelphis;
@@ -430,7 +442,8 @@ begin
       try
         reg.GetKeyNames(bdsKeys);
         for bdsKey in bdsKeys do
-          AddDelphiEntry(bdsKey);
+          if DelphiHasRegEntries(bdsKey) then
+            AddDelphiEntry(bdsKey);
       finally
         bdsKeys.Free;
       end;
@@ -444,7 +457,7 @@ begin
   end;
 
   // restore saved setting
-  last_delphi := Trim(ccRegistryLayoutSaver.ResstoreStrValue('LastDelphiProduct'));
+  last_delphi := Trim(ccRegistryLayoutSaver.RestoreStrValue('LastDelphiProduct'));
   if Length(last_delphi) > 0 then
     cmbDelphis.ItemIndex := cmbDelphis.Items.IndexOf(last_delphi)
   else

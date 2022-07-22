@@ -2,49 +2,60 @@ object frmPathEditorMain: TfrmPathEditorMain
   Left = 0
   Top = 0
   Caption = 'Delphi Path Editor'
-  ClientHeight = 334
-  ClientWidth = 654
+  ClientHeight = 668
+  ClientWidth = 1314
   Color = clBtnFace
-  Constraints.MinHeight = 350
-  Constraints.MinWidth = 670
+  Constraints.MinHeight = 700
+  Constraints.MinWidth = 1340
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
-  Font.Height = -13
+  Font.Height = -26
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = False
   ShowHint = True
   Visible = True
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnDestroy = FormDestroy
-  PixelsPerInch = 96
-  TextHeight = 16
+  PixelsPerInch = 192
+  TextHeight = 31
   object Label1: TLabel
-    Left = 24
-    Top = 8
-    Width = 87
-    Height = 16
+    Left = 48
+    Top = 16
+    Width = 176
+    Height = 31
+    Margins.Left = 6
+    Margins.Top = 6
+    Margins.Right = 6
+    Margins.Bottom = 6
     Caption = 'Delphi Version:'
   end
   object lblChangeIndicator: TLabel
-    Left = 215
-    Top = 33
-    Width = 9
-    Height = 16
+    Left = 430
+    Top = 66
+    Width = 24
+    Height = 39
+    Margins.Left = 6
+    Margins.Top = 6
+    Margins.Right = 6
+    Margins.Bottom = 6
     Caption = '*'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -19
+    Font.Height = -38
     Font.Name = 'Courier'
     Font.Style = []
     ParentFont = False
   end
   object cmbDelphis: TComboBox
-    Left = 24
-    Top = 30
-    Width = 185
-    Height = 24
+    Left = 48
+    Top = 60
+    Width = 370
+    Height = 39
+    Margins.Left = 6
+    Margins.Top = 6
+    Margins.Right = 6
+    Margins.Bottom = 6
     Style = csDropDownList
     DropDownCount = 12
     Sorted = True
@@ -53,61 +64,68 @@ object frmPathEditorMain: TfrmPathEditorMain
     OnCloseUp = cmbDelphisCloseUp
   end
   object ToolBar1: TToolBar
-    Left = 624
+    Left = 1254
     Top = 0
-    Width = 30
-    Height = 315
+    Width = 60
+    Height = 630
+    Margins.Left = 6
+    Margins.Top = 6
+    Margins.Right = 6
+    Margins.Bottom = 6
     Align = alRight
-    ButtonHeight = 30
-    ButtonWidth = 30
+    ButtonHeight = 60
+    ButtonWidth = 60
     Caption = 'ToolBar1'
     Images = imlActions
     TabOrder = 1
-    object ToolButton6: TToolButton
-      Left = 0
-      Top = 0
-      Width = 8
-      Caption = 'ToolButton6'
-      ImageIndex = 7
-      Style = tbsSeparator
-    end
-    object ToolButton2: TToolButton
-      Left = 0
-      Top = 0
-      Width = 8
-      Caption = 'ToolButton2'
-      ImageIndex = 9
-      Wrap = True
-      Style = tbsSeparator
-    end
     object ToolButton1: TToolButton
       Left = 0
-      Top = 38
+      Top = 0
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Action = actEditModify
       Wrap = True
     end
     object ToolButton4: TToolButton
       Left = 0
-      Top = 68
+      Top = 60
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Action = actEditCut
       Wrap = True
     end
     object ToolButton3: TToolButton
       Left = 0
-      Top = 98
+      Top = 120
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Action = actEditCopy
       Wrap = True
       Style = tbsCheck
     end
     object ToolButton5: TToolButton
       Left = 0
-      Top = 128
+      Top = 180
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Action = actEditPaste
     end
     object ToolButton7: TToolButton
       Left = 0
-      Top = 128
-      Width = 8
+      Top = 180
+      Width = 16
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Caption = 'ToolButton7'
       ImageIndex = 7
       Wrap = True
@@ -115,19 +133,31 @@ object frmPathEditorMain: TfrmPathEditorMain
     end
     object ToolButton8: TToolButton
       Left = 0
-      Top = 166
+      Top = 256
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Action = actAdd
       Wrap = True
     end
     object ToolButton9: TToolButton
       Left = 0
-      Top = 196
+      Top = 316
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Action = actRemove
     end
     object ToolButton10: TToolButton
       Left = 0
-      Top = 196
-      Width = 8
+      Top = 316
+      Width = 16
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Caption = 'ToolButton10'
       ImageIndex = 4
       Wrap = True
@@ -135,71 +165,100 @@ object frmPathEditorMain: TfrmPathEditorMain
     end
     object ToolButton11: TToolButton
       Left = 0
-      Top = 234
+      Top = 392
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Action = actMoveUp
       Wrap = True
     end
     object ToolButton12: TToolButton
       Left = 0
-      Top = 264
+      Top = 452
+      Margins.Left = 6
+      Margins.Top = 6
+      Margins.Right = 6
+      Margins.Bottom = 6
       Action = actMoveDown
     end
   end
   object lbPaths: TListBox
-    Left = 241
+    Left = 482
     Top = 0
-    Width = 383
-    Height = 315
+    Width = 772
+    Height = 630
+    Margins.Left = 6
+    Margins.Top = 6
+    Margins.Right = 6
+    Margins.Bottom = 6
     Align = alRight
     Anchors = [akLeft, akTop, akRight, akBottom]
+    ItemHeight = 31
     PopupMenu = mnuPathActions
     TabOrder = 2
     OnClick = lbPathsClick
   end
   object txtDelphiInfo: TStaticText
-    Left = 24
-    Top = 60
-    Width = 185
-    Height = 152
+    Left = 48
+    Top = 120
+    Width = 370
+    Height = 304
+    Margins.Left = 6
+    Margins.Top = 6
+    Margins.Right = 6
+    Margins.Bottom = 6
     AutoSize = False
     TabOrder = 3
   end
   object StatusBar: TStatusBar
     Left = 0
-    Top = 315
-    Width = 654
-    Height = 19
+    Top = 630
+    Width = 1314
+    Height = 38
+    Margins.Left = 6
+    Margins.Top = 6
+    Margins.Right = 6
+    Margins.Bottom = 6
     Panels = <
       item
-        Width = 241
+        Width = 482
       end
       item
-        Width = 50
+        Width = 100
       end>
   end
   object BitBtn1: TBitBtn
-    Left = 24
-    Top = 218
-    Width = 87
-    Height = 46
+    Left = 48
+    Top = 436
+    Width = 174
+    Height = 92
+    Margins.Left = 6
+    Margins.Top = 6
+    Margins.Right = 6
+    Margins.Bottom = 6
     Action = actSave
     Caption = '&Save'
     TabOrder = 5
   end
   object BitBtn2: TBitBtn
-    Left = 120
-    Top = 218
-    Width = 89
-    Height = 46
+    Left = 240
+    Top = 436
+    Width = 178
+    Height = 92
+    Margins.Left = 6
+    Margins.Top = 6
+    Margins.Right = 6
+    Margins.Bottom = 6
     Action = actCancel
     Caption = 'Cancel'
     TabOrder = 6
   end
   object imlActions: TImageList
-    Left = 176
-    Top = 256
+    Left = 288
+    Top = 288
     Bitmap = {
-      494C01010A005800700010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01010A005800040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000003000000001002000000000000030
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000C5600D00C965110000000000000000000000
@@ -604,8 +663,8 @@ object frmPathEditorMain: TfrmPathEditorMain
   end
   object actPathActions: TActionList
     Images = imlActions
-    Left = 216
-    Top = 200
+    Left = 184
+    Top = 136
     object actSave: TAction
       Category = 'File'
       Caption = '&Save'
@@ -698,8 +757,8 @@ object frmPathEditorMain: TfrmPathEditorMain
   end
   object mnuPathActions: TPopupMenu
     Images = imlActions
-    Left = 320
-    Top = 184
+    Left = 384
+    Top = 136
     object Save1: TMenuItem
       Action = actSave
     end
@@ -758,8 +817,8 @@ object frmPathEditorMain: TfrmPathEditorMain
     Top = 232
   end
   object ccRegistryLayoutSaver: TccRegistryLayoutSaver
-    Left = 504
-    Top = 256
+    Left = 1016
+    Top = 528
   end
   object dlgCancelChangesPrompt: TTaskDialog
     Buttons = <>
@@ -772,8 +831,8 @@ object frmPathEditorMain: TfrmPathEditorMain
       'Changes have been made to the current list of paths. Are you sur' +
       'e you want to discard those changes?'
     Title = 'Cancel Changes?'
-    Left = 400
-    Top = 240
+    Left = 736
+    Top = 480
   end
   object dlgSaveChangesPrompt: TTaskDialog
     Buttons = <>
@@ -787,7 +846,7 @@ object frmPathEditorMain: TfrmPathEditorMain
       'ment Variables for the currently selected Delphi version. Save t' +
       'hem before exiting?'
     Title = 'Save your changes?'
-    Left = 304
-    Top = 256
+    Left = 512
+    Top = 432
   end
 end
